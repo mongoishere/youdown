@@ -59,7 +59,7 @@ class YouDown(object):
         
         song_info['artwork_location'] = ("%s/%s" % (youdown_artwork_dir, image_name))
 
-        import pdb; pdb.set_trace()
+        #import pdb; pdb.set_trace()
 
         os.rename((os.environ['HOME'] + '/Music/') + youtube_audio_info.get('title', None) + '.mp3', os.environ['HOME'] + '/Music/' + song_info['song_name'] + '.mp3')
 

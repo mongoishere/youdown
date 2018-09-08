@@ -29,7 +29,7 @@ class Spotify_Search(object):
         pass
 
     def find_song_album(self, page, link_type):
-        import pdb; pdb.set_trace()
+        #import pdb; pdb.set_trace()
         
         script_divs = page.find_all("script")
         song_meta_data = script_divs[-4]
@@ -42,8 +42,6 @@ class Spotify_Search(object):
 
 
         if link_type == "track":
-
-            print("This is a track")
 
             script_inner = song_meta_data.getText()
 
@@ -67,8 +65,8 @@ class Spotify_Search(object):
 
         elif link_type == "album":
 
-            print("This is an album")
-
+            album_tracks = []
+            
             script_inner = song_meta_data.getText()
 
             json_start_line = script_inner[script_inner.find("Entity"):]
@@ -78,16 +76,25 @@ class Spotify_Search(object):
 
             album_json = json.loads(json_byte)
 
-            album_name = album_json['name']
-            artist_name = album_json['artists'][0]['name']
+            #album_name = album_json['name']
+            #artist_name = album_json['artists'][0]['name']
 
-            import pdb; pdb.set_trace()
+            for index, track in enumerate(album_json['tracks']['items']):
 
-            print("Album name: %s" % (album_name))
+                album_tracks.append(album_json['tracks']['items'][index]['name'])
+
+
+            song_info['song_name'] = album_tracks
+            song_info['album_name'] = album_json['name']
+            song_info['artist_name'] = album_json['artists'][0]['name']
+
+            #import pdb; pdb.set_trace()
+
+            #print("Album name: %s" % (album_name))
+
+            return song_info
 
         elif link_type == "artist":
-
-            print("This is an artist")
 
             top_tracks = []
             track_albums = []
@@ -135,17 +142,15 @@ class Spotify_Search(object):
 
         if isinstance(song_info['song_name'], list):
 
-            print(song_info['song_name'])
+            if len(song_info['song_name']) == 1:
+                song_info['song_name'] = song_info['song_name'][0]
 
-            for index, song in enumerate(song_info["song_name"]):
+            else:
+                for index, song in enumerate(song_info["song_name"]):   
+                    
+                    if song.lower() in song_title.lower():
+                        song_info['song_name'] = song
+                        song_info['album_name'] = song_info['album_name'][index]
 
-                if song.lower() in song_title:
-
-                    print(song)
-                    song_info['song_name'] = song
-                    song_info['album_name'] = song_info['album_name'][index]
-                    print(song_info['album_name'])
-
-            import pdb; pdb.set_trace
-
+        
         return song_info
