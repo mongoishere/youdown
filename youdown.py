@@ -110,6 +110,7 @@ class YouDown(object):
         audio_file.tag.artist = song_info['artist_name']
         audio_file.tag.album = song_info['album_name']
         audio_file.tag.title = song_info['song_name']
+        audio_file.tag.release_date = song_info['release_date']
         audio_file.tag.images.set(3, artwork_data, 'image/jpeg')
         audio_file.tag.save()
 

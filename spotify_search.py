@@ -37,7 +37,8 @@ class Spotify_Search(object):
         song_info = {
             "song_name": "",
             "album_name": "",
-            "artist_name": ""
+            "artist_name": "",
+            "release_date": ""
         }
 
 
@@ -52,10 +53,12 @@ class Spotify_Search(object):
 
             song_json = json.loads(json_byte)
 
+            #import pdb; pdb.set_trace()
+
             song_info["song_name"] = song_json['name']
             song_info["album_name"] = song_json['album']['name']
             song_info["artist_name"] = song_json['album']['artists'][0]['name']
-            
+            song_info['release_date'] = song_json['album']['release_date']
             #import pdb; pdb.set_trace()
 
             #album_name_div = page.findAll("div", {"class": "mo-info"})
