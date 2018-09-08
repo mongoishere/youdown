@@ -122,6 +122,7 @@ class Spotify_Search(object):
 
             return song_info
 
+
     def find_song_name(self, page, link_type):
 
         if link_type == "track":

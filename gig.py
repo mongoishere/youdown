@@ -66,7 +66,11 @@ class GoogleImageGrabber(object):
             #print(img['ru'])
             image_host_set.append(img['ru'])
 
-            request.urlretrieve(img['ou'], ("%s/%s/%s.jpg" % ('downloads', img_search, ind)))
+            try:
+                request.urlretrieve(img['ou'], ("%s/%s/%s.jpg" % ('downloads', img_search, ind)))
+
+            except:
+                pass
 
         return image_host_set
 
