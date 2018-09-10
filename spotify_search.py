@@ -19,10 +19,18 @@ class Spotify_Search(object):
 
     def get_spotify_page(self, tgt_link):
 
-        spotify_resp = urllib.request.urlopen(tgt_link)
-        spotify_soup = BeautifulSoup(spotify_resp.read(), 'html.parser')
+        import pdb; pdb.set_trace()
+
+        try:
+            spotify_resp = urllib.request.urlopen(tgt_link)
+            print(spotify_resp)
+            spotify_soup = BeautifulSoup(spotify_resp.read(), 'html.parser')
         
-        return spotify_soup
+            return spotify_soup
+
+        except urllib.error.HTTPError as http_error:
+
+            return -1
 
     def find_artwork(self, page):
 
@@ -138,23 +146,44 @@ class Spotify_Search(object):
 
     def find_song_info(self, tgt_link, song_title=None):
 
+        song_info = {
+                "song_name": song_title,
+                "artist_name": "None",
+                "album_name": "None",
+                "release_date": None
+            }
+
         link_info = self.get_link_info(tgt_link)
         spotify_page = self.get_spotify_page(tgt_link)
         
+        return song_info if spotify_page == -1 else None
+
         song_name = self.find_song_name(spotify_page, link_info[1])
         song_info = self.find_song_album(spotify_page, link_info[1])
 
-        if isinstance(song_info['song_name'], list):
+        import pdb; pdb.set_trace()
 
-            if len(song_info['song_name']) == 1:
-                song_info['song_name'] = song_info['song_name'][0]
+        try:
+            if isinstance(song_info['song_name'], list):
 
-            else:
-                for index, song in enumerate(song_info["song_name"]):   
-                    
-                    if song.lower() in song_title.lower():
-                        song_info['song_name'] = song
-                        song_info['album_name'] = song_info['album_name'][index]
+                if len(song_info['song_name']) == 1:
+                    song_info['song_name'] = song_info['song_name'][0]
 
+                else:
+                    for index, song in enumerate(song_info["song_name"]):   
+                        
+                        if song.lower() in song_title.lower():
+                            song_info['song_name'] = song
+                            song_info['album_name'] = song_info['album_name'][index]
+        except:
+            
+            song_info = {
+                "song_name": song_title,
+                "artist_name": "None",
+                "album_name": "None",
+                "release_date": None
+            }
+
+            return song_info
         
         return song_info

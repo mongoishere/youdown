@@ -32,11 +32,11 @@ class YouDown(object):
 
         youtube_audio_info = self.download_youtube_audio(you_url)
 
+        target_num = None
+
         if all(value for value in youtube_song_info.values()):
 
             self.youdown_debug_print("Searching the RIGHT Way!")
-
-            target_num = None
 
             song_name = youtube_song_info['song']
             song_artist = youtube_song_info['artist']
@@ -56,6 +56,8 @@ class YouDown(object):
             
             artwork_hosts = self.download_artwork(youtube_audio_info.get('title', None) + " spotify") # get artwork
         
+            #import pdb; pdb.set_trace()
+
             for index, host in enumerate(artwork_hosts):
 
                 if not self.check_image_uri(host):
@@ -64,6 +66,12 @@ class YouDown(object):
                     break
 
             youdown_artwork_dir = self.find_image_path(youtube_audio_info.get('title', None) + ' spotify')
+        
+        #import pdb; pdb.set_trace()
+
+        if target_num == None:
+
+            target_num = 0
         
         image_name = [f for d, s, f in os.walk(youdown_artwork_dir)][0][target_num]
 
@@ -79,7 +87,7 @@ class YouDown(object):
 
         #import pdb; pdb.set_trace()
 
-        os.rename((os.environ['HOME'] + '/Music/') + str(youtube_audio_info.get('title', None)).replace(":", "_") + '.mp3', os.environ['HOME'] + '/Music/' + song_info['song_name'] + '.mp3')
+        os.rename((os.environ['HOME'] + '/Music/') + str(youtube_audio_info.get('title', None)).replace(":", "_").replace("\"", "'") + '.mp3', os.environ['HOME'] + '/Music/' + song_info['song_name'] + '.mp3')
 
         #song_info['song_location'] = (os.environ['HOME'] + '/Music/') + youtube_audio_info.get('title', None) + '.mp3'
 
