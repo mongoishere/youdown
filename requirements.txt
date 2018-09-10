@@ -1,0 +1,4 @@
+youtube-dl
+eyed3
+selenium
+request
