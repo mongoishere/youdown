@@ -3,7 +3,6 @@ import youtube_dl as yd
 import os, requests, eyed3, selenium, gig, spotify_search, sys
 from bs4 import BeautifulSoup
 from sys import argv
-from google_images_download import google_images_download
 
 class YouDown(object):
 
@@ -32,6 +31,8 @@ class YouDown(object):
 
         youtube_audio_info = self.download_youtube_audio(you_url)
 
+        youtube_song_location = os.environ['HOME'] + '/Music/' + str(youtube_audio_info.get('title', None)).replace(":", "_").replace("\"", "'") + '.mp3'
+
         target_num = None
 
         if all(value for value in youtube_song_info.values()):
@@ -43,30 +44,61 @@ class YouDown(object):
 
             artwork_hosts = self.download_artwork("%s - %s spotify" % (song_name, song_artist)) # get artwork
 
-            for index, host in enumerate(artwork_hosts):
+            if any([self.check_image_uri(host) for host in artwork_hosts]):
 
-                if self.check_image_uri(host):
+                for index, host in enumerate(artwork_hosts):
 
-                    target_num = index
-                    break
-            
-            youdown_artwork_dir = self.find_image_path("%s - %s spotify" % (song_name, song_artist))
+                    if self.check_image_uri(host):
+
+                        target_num = index
+                        break
+                
+                youdown_artwork_dir = self.find_image_path("%s - %s spotify" % (song_name, song_artist))
+
+            else:
+
+                artwork_hosts = self.download_artwork("%s spotify" % (song_name))
+
+                for index, host in enumerate(artwork_hosts):
+
+                    if self.check_image_uri(host):
+
+                        target_num = index
+                        break
+                
+                youdown_artwork_dir = self.find_image_path("%s spotify" % (song_name))
+
 
         else:
             
             artwork_hosts = self.download_artwork(youtube_audio_info.get('title', None) + " spotify") # get artwork
+
+            if any([self.check_image_uri(host) for host in artwork_hosts]):
+
+                #import pdb; pdb.set_trace()
+
+                for index, host in enumerate(artwork_hosts):
+
+                    if self.check_image_uri(host):
+
+                        target_num = index
+                        break
+
+                youdown_artwork_dir = self.find_image_path(youtube_audio_info.get('title', None) + ' spotify')
         
-            #import pdb; pdb.set_trace()
+            else:
 
-            for index, host in enumerate(artwork_hosts):
+                artwork_hosts = self.download_artwork(youtube_audio_info.get('title', None))
 
-                if not self.check_image_uri(host):
+                for index, host in enumerate(artwork_hosts):
 
-                    target_num = index
-                    break
+                    if self.check_image_uri(host):
 
-            youdown_artwork_dir = self.find_image_path(youtube_audio_info.get('title', None) + ' spotify')
-        
+                        target_num = index
+                        break
+                
+                youdown_artwork_dir = self.find_image_path(youtube_audio_info.get('title', None))
+
         #import pdb; pdb.set_trace()
 
         if target_num == None:
@@ -82,16 +114,24 @@ class YouDown(object):
             song_title = youtube_audio_info.get('title', None)       
 
         song_info = sp_srch.find_song_info(artwork_hosts[target_num], song_title)
-        
+
         song_info['artwork_location'] = ("%s/%s" % (youdown_artwork_dir, image_name))
 
         #import pdb; pdb.set_trace()
 
-        os.rename((os.environ['HOME'] + '/Music/') + str(youtube_audio_info.get('title', None)).replace(":", "_").replace("\"", "'") + '.mp3', os.environ['HOME'] + '/Music/' + song_info['song_name'] + '.mp3')
+        # Handle file not found error
+        try:
+            os.rename(youtube_song_location, os.environ['HOME'] + '/Music/' + song_info['song_name'] + '.mp3')
 
-        #song_info['song_location'] = (os.environ['HOME'] + '/Music/') + youtube_audio_info.get('title', None) + '.mp3'
+        except FileNotFoundError:
+            
+            if self.query_yes_no("%s was not found, provide location manually?" % (youtube_song_location)):
 
-        song_info['song_location'] = (os.environ['HOME'] + '/Music/' + song_info['song_name'] + '.mp3')
+                usr_filename = str(self.youdown_debug_print("Enter Filename Path > ", True))
+                os.rename(usr_filename, os.environ['HOME'] + '/Music/' + song_info['song_name'] + '.mp3')
+
+
+        song_info['song_location'] = os.environ['HOME'] + '/Music/' + song_info['song_name'] + '.mp3'
 
         self.user_song_check(song_info)
 
@@ -106,35 +146,41 @@ class YouDown(object):
         usr_correct = self.query_yes_no("Is This Correct?")
 
     def query_yes_no(self, question, default="yes"):
-        """Ask a yes/no question via raw_input() and return their answer.
 
-        "question" is a string that is presented to the user.
-        "default" is the presumed answer if the user just hits <Enter>.
-            It must be "yes" (the default), "no" or None (meaning
-            an answer is required of the user).
-
-        The "answer" return value is True for "yes" or False for "no".
-        """
-        valid = {"yes": True,"y": True, "ye": True,
-                "no": False, "n": False}
+        valid = {
+            "yes": True,
+            "y": True,
+            "ye": True,
+            "no": False,
+            "n": False
+        }
+        
         if default is None:
-            prompt = " [y/n] "
+            prompt = "[y/n]"
+            
         elif default == "yes":
-            prompt = " [Y/n] "
+            prompt = "[Y/n]"
+            
         elif default == "no":
-            prompt = " [y/N] "
+            prompt = "[y/N]"
+
         else:
             raise ValueError("invalid default answer: '%s'" % default)
 
         while True:
-            sys.stdout.write(question + prompt)
+
+            self.youdown_debug_print("%s %s " % (question, prompt))
+
             choice = input().lower()
+            
             if default is not None and choice == '':
                 return valid[default]
+
             elif choice in valid:
                 return valid[choice]
+
             else:
-                sys.stdout.write("Please respond with 'yes' or 'no' "
+                self.youdown_debug_print("Please respond with 'yes' or 'no' "
                                 "(or 'y' or 'n').\n")
 
     def find_youtube_song(self, you_url):
@@ -196,11 +242,10 @@ class YouDown(object):
 
     def check_image_uri(self, image_url):
 
-        print(image_url)
-
+        #print(image_url)
         if "open.spotify.com" in image_url:
 
-            self.youdown_debug_print("Found Spotify source link")
+            #self.youdown_debug_print("Found Spotify source link")
             return True
 
         else:
@@ -230,9 +275,14 @@ class YouDown(object):
     
         #return song_info
 
-    def youdown_debug_print(self, debug_str):
+    def youdown_debug_print(self, debug_str, prn_input=False):
 
-        print("[YouDown] {}".format(str(debug_str)))
+        if prn_input:
+            ret = input("[YouDown] {}".format(debug_str))
+            return ret
+
+        else:
+            print("[YouDown] {}".format(str(debug_str)))
 
 if __name__ == '__main__':
 

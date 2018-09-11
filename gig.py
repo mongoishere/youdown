@@ -88,7 +88,7 @@ class GoogleImageGrabber(object):
 
         search_query = "https://www.google.com/search?hl=en&site=imghp&tbm=isch&source=hp&q="
 
-        self.gig_browser.get(search_query + search_target)
+        self.gig_browser.get(search_query + search_target + "&tbs=iar:s")
 
         source = self.gig_browser.find_element_by_tag_name("body")
 

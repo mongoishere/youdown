@@ -19,11 +19,11 @@ class Spotify_Search(object):
 
     def get_spotify_page(self, tgt_link):
 
-        import pdb; pdb.set_trace()
+        #import pdb; pdb.set_trace()
 
         try:
             spotify_resp = urllib.request.urlopen(tgt_link)
-            print(spotify_resp)
+            #print(spotify_resp)
             spotify_soup = BeautifulSoup(spotify_resp.read(), 'html.parser')
         
             return spotify_soup
@@ -151,17 +151,17 @@ class Spotify_Search(object):
                 "artist_name": "None",
                 "album_name": "None",
                 "release_date": None
-            }
+        }
 
         link_info = self.get_link_info(tgt_link)
         spotify_page = self.get_spotify_page(tgt_link)
-        
-        return song_info if spotify_page == -1 else None
+
+        if spotify_page == -1:
+            
+            return song_info
 
         song_name = self.find_song_name(spotify_page, link_info[1])
         song_info = self.find_song_album(spotify_page, link_info[1])
-
-        import pdb; pdb.set_trace()
 
         try:
             if isinstance(song_info['song_name'], list):
