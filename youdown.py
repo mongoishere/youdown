@@ -1,6 +1,6 @@
 #!/usr/bin/python3
 import youtube_dl as yd
-import os, requests, eyed3, selenium, gig, spotify_search, sys
+import os, requests, eyed3, selenium, gig, spotify_search, sys, urllib
 from bs4 import BeautifulSoup
 from sys import argv
 
@@ -132,18 +132,14 @@ class YouDown(object):
 
 
         song_info['song_location'] = os.environ['HOME'] + '/Music/' + song_info['song_name'] + '.mp3'
+        self.format_youtube_song(song_info, True)
 
-        self.user_song_check(song_info)
-
-        self.format_youtube_song(song_info)
-
-    def user_song_check(self, song_info):
+    def print_song_info(self, song_info):
 
         self.youdown_debug_print("Song Name: %s" % (song_info['song_name']))
         self.youdown_debug_print("Artist Name: %s" % (song_info['artist_name']))
         self.youdown_debug_print("Album Name: %s" % (song_info['album_name']))
-
-        usr_correct = self.query_yes_no("Is This Correct?")
+        self.youdown_debug_print("Song Location: %s" % (song_info['song_location']))
 
     def query_yes_no(self, question, default="yes"):
 
@@ -216,9 +212,31 @@ class YouDown(object):
         
         return youtube_song_info
 
-    def format_youtube_song(self, song_info):
+    def format_youtube_song(self, song_info, confirm=False):
 
         artwork_data = open(song_info['artwork_location'], "rb").read()
+
+        if confirm:
+            self.print_song_info(song_info)
+            
+            usr_check = self.query_yes_no("[YouDown] Is this correct?")
+
+            if not usr_check:
+
+                song_info['song_name'] = self.youdown_debug_print("Enter Song Name > ", True)
+                song_info['artist_name'] = self.youdown_debug_print("Enter Artist Name > ", True)
+                song_info['album_name'] = self.youdown_debug_print("Enter Album Name > ", True)
+
+                while True:
+                    custom_image_link = self.youdown_debug_print("Enter Cover Art URL > ", True)
+
+                    try:
+                        image_data = urllib.request.urlopen(custom_image_link)
+                        artwork_data = image_data.read()
+                        break
+
+                    except urllib.error.HTTPError:
+                        self.youdown_debug_print("That URL is forbidden...Try another?")
 
         audio_file = eyed3.load(song_info['song_location'])
         audio_file.tag.artist = song_info['artist_name'] 
