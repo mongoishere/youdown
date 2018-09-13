@@ -1,23 +1,28 @@
 #!/usr/bin/python3
-import sys, json, os, request, spotify_search
-from selenium import webdriver
-from selenium.webdriver.common.keys import Keys
+import sys, json, os, request, spotify_search, urllib
+#from selenium import webdriver
+#from selenium.webdriver.common.keys import Keys
+from bs4 import BeautifulSoup
 from urllib import request
 
 class GoogleImageGrabber(object):
 
     def __init__(self):
 
-        gig_driver_opt = webdriver.FirefoxOptions()
-        gig_driver_opt.add_argument('--headless')
+        #gig_driver_opt = webdriver.FirefoxOptions()
+        #gig_driver_opt.add_argument('--headless')
 
-        self.gig_browser = webdriver.Firefox(options=gig_driver_opt)
+        #self.gig_browser = webdriver.Firefox(options=gig_driver_opt)
+        pass
 
     def find_images(self, page, img_count):
 
-        images = page.find_element_by_id('rg_s')
+        #images = page.find_element_by_id('rg_s')
 
-        image_meta_divs = images.find_elements_by_class_name('rg_meta')
+        #import pdb; pdb.set_trace()
+
+        #image_meta_divs = images.find_elements_by_class_name('rg_meta')
+        image_meta_divs = page.find_all("div", {"class": "rg_meta"})
 
         image_meta_data = []
 
@@ -28,13 +33,14 @@ class GoogleImageGrabber(object):
             if ind == img_count:
                 break
 
-            else:   
-                start_elem = image_meta.get_attribute('outerHTML').find('{')
-                end_elem = image_meta.get_attribute('outerHTML').find('}') + 1
+            else:
+
+                start_elem = str(image_meta).find('>{') + 1
+                end_elem = str(image_meta).find('}<') + 1
 
                 # image_meta.get_attribute('outerHTML')[start_elem:end_elem]
 
-                image_json_string = str(image_meta.get_attribute('outerHTML')[start_elem:end_elem])
+                image_json_string = str(str(image_meta)[start_elem:end_elem])
 
                 image_json_byte = bytes(image_json_string, "utf-8").decode('unicode_escape')
 
@@ -88,9 +94,26 @@ class GoogleImageGrabber(object):
 
         search_query = "https://www.google.com/search?hl=en&site=imghp&tbm=isch&source=hp&q="
 
-        self.gig_browser.get(search_query + search_target + "&tbs=iar:s")
+        search_query = search_query + search_target + "&tbs=iar:s"
 
-        source = self.gig_browser.find_element_by_tag_name("body")
+        search_query = search_query.replace(" ", "+")
+
+        #import pdb; pdb.set_trace()
+
+        #self.gig_browser.get(search_query + search_target + "&tbs=iar:s")
+
+        #source = self.gig_browser.find_element_by_tag_name("body")
+
+        headers = {}
+        headers['User-Agent'] = "Mozilla/5.0 (Windows NT 6.1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/41.0.2228.0 Safari/537.36"
+        image_search_req = urllib.request.Request(search_query, headers=headers)
+        image_search_resp = urllib.request.urlopen(image_search_req)
+        image_search_page = image_search_resp.read()
+        image_search_soup = BeautifulSoup(image_search_page, 'html.parser')
+
+        source = image_search_soup.find("body")
+        
+        #images
 
         imgset = self.find_images(source, limit)
 

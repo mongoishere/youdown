@@ -1,6 +1,6 @@
 #!/usr/bin/python3
 import youtube_dl as yd
-import os, requests, eyed3, selenium, gig, spotify_search, sys, urllib
+import os, requests, eyed3, gig, spotify_search, sys, urllib
 from bs4 import BeautifulSoup
 from sys import argv
 
