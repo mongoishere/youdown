@@ -1,9 +1,9 @@
 #!/usr/bin/python3
-import sys, json, os, request, spotify_search, urllib
+import sys, json, os, spotify_search, urllib.request
 #from selenium import webdriver
 #from selenium.webdriver.common.keys import Keys
 from bs4 import BeautifulSoup
-from urllib import request
+#from urllib import request
 
 class GoogleImageGrabber(object):
 
@@ -71,12 +71,15 @@ class GoogleImageGrabber(object):
 
             #print(img['ru'])
             image_host_set.append(img['ru'])
+            
+            #import pdb; pdb.set_trace()
 
             try:
-                request.urlretrieve(img['ou'], ("%s/%s/%s.jpg" % ('downloads', img_search, ind)))
+                urllib.request.urlretrieve(img['ou'], ("%s/%s/%s/%s.jpg" % (os.environ['PWD'], 'downloads', img_search, ind)))
 
-            except:
-                pass
+            except Exception as e:
+                
+                print(str(e))
 
         return image_host_set
 
@@ -108,12 +111,13 @@ class GoogleImageGrabber(object):
         headers['User-Agent'] = "Mozilla/5.0 (Windows NT 6.1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/41.0.2228.0 Safari/537.36"
         image_search_req = urllib.request.Request(search_query, headers=headers)
         image_search_resp = urllib.request.urlopen(image_search_req)
-        image_search_page = image_search_resp.read()
+        image_search_page = image_search_resp
         image_search_soup = BeautifulSoup(image_search_page, 'html.parser')
 
         source = image_search_soup.find("body")
         
         #images
+        #import pdb; pdb.set_trace()
 
         imgset = self.find_images(source, limit)
 

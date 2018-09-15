@@ -104,7 +104,10 @@ class YouDown(object):
         if target_num == None:
 
             target_num = 0
-        
+       
+
+        #import pdb; pdb.set_trace()
+
         image_name = [f for d, s, f in os.walk(youdown_artwork_dir)][0][target_num]
 
         if youtube_song_info['song']:

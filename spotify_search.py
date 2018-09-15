@@ -163,6 +163,8 @@ class Spotify_Search(object):
         song_name = self.find_song_name(spotify_page, link_info[1])
         song_info = self.find_song_album(spotify_page, link_info[1])
 
+        #import pdb; pdb.set_trace()
+
         try:
             if isinstance(song_info['song_name'], list):
 
@@ -172,9 +174,15 @@ class Spotify_Search(object):
                 else:
                     for index, song in enumerate(song_info["song_name"]):   
                         
-                        if song.lower() in song_title.lower():
+                        if song_title.lower() in song.lower():
                             song_info['song_name'] = song
-                            song_info['album_name'] = song_info['album_name'][index]
+                            #import pdb; pdb.set_trace()
+
+                            if isinstance(song_info['album_name'], list):
+                                
+                                song_info['album_name'] = song_info['album_name'][index]
+
+        
         except:
             
             song_info = {
