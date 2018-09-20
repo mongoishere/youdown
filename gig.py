@@ -1,5 +1,5 @@
 #!/usr/bin/python3
-import sys, json, os, spotify_search, urllib.request
+import sys, json, os, spotify_search, urllib.request, urllib.parse
 #from selenium import webdriver
 #from selenium.webdriver.common.keys import Keys
 from bs4 import BeautifulSoup
@@ -96,26 +96,36 @@ class GoogleImageGrabber(object):
         self.download_paths(search_target)
 
         search_query = "https://www.google.com/search?hl=en&site=imghp&tbm=isch&source=hp&q="
-
         search_query = search_query + search_target + "&tbs=iar:s"
-
         search_query = search_query.replace(" ", "+")
 
-        #import pdb; pdb.set_trace()
+        import pdb; pdb.set_trace()
 
         #self.gig_browser.get(search_query + search_target + "&tbs=iar:s")
 
         #source = self.gig_browser.find_element_by_tag_name("body")
 
-        headers = {}
-        headers['User-Agent'] = "Mozilla/5.0 (Windows NT 6.1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/41.0.2228.0 Safari/537.36"
-        image_search_req = urllib.request.Request(search_query, headers=headers)
-        image_search_resp = urllib.request.urlopen(image_search_req)
-        image_search_page = image_search_resp
-        image_search_soup = BeautifulSoup(image_search_page, 'html.parser')
+        try:
 
-        source = image_search_soup.find("body")
-        
+            headers = {}
+            headers['User-Agent'] = "Mozilla/5.0 (Windows NT 6.1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/41.0.2228.0 Safari/537.36"
+            image_search_req = urllib.request.Request(search_query, headers=headers)
+
+            image_search_resp = urllib.request.urlopen(image_search_req)
+            image_search_page = image_search_resp
+            image_search_soup = BeautifulSoup(image_search_page, 'html.parser')
+
+            source = image_search_soup.find("body")
+
+        except UnicodeEncodeError:
+
+            if return_host:
+
+                hosts = ['None']
+
+                return hosts
+
+    
         #images
         #import pdb; pdb.set_trace()
 

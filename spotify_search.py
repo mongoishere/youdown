@@ -15,7 +15,10 @@ class Spotify_Search(object):
             link_type_str = tgt_link[8:]
             link_type = link_type_str.split("/")
 
-        return link_type
+            return link_type
+
+        else:
+            return None
 
     def get_spotify_page(self, tgt_link):
 
@@ -28,6 +31,10 @@ class Spotify_Search(object):
         
             return spotify_soup
 
+        except ValueError as value_error:
+
+            return -1
+
         except urllib.error.HTTPError as http_error:
 
             return -1
@@ -38,9 +45,6 @@ class Spotify_Search(object):
 
     def find_song_album(self, page, link_type):
         #import pdb; pdb.set_trace()
-        
-        script_divs = page.find_all("script")
-        song_meta_data = script_divs[-4]
 
         song_info = {
             "song_name": "",
@@ -48,6 +52,21 @@ class Spotify_Search(object):
             "artist_name": "",
             "release_date": ""
         }
+        
+        try:
+            script_divs = page.find_all("script")
+            song_meta_data = script_divs[-4]
+
+        except Exception as e:
+
+            print("[Spotify Search] %s" % (str(e)))
+            
+            song_info['song_name'] = 'None'
+            song_info['album_name'] = 'None'
+            song_info['artist_name'] = 'None'
+            song_info['release_date'] = None
+
+            return song_info
 
 
         if link_type == "track":
@@ -110,6 +129,8 @@ class Spotify_Search(object):
             top_tracks = []
             track_albums = []
 
+            song_meta_data = script_divs[-5]
+
             script_inner = song_meta_data.getText()
 
             json_start_line = script_inner[script_inner.find("Entity"):]
@@ -117,7 +138,33 @@ class Spotify_Search(object):
 
             json_byte = bytes(json_start_elem, "utf-8").decode("unicode_escape").strip()[:-1]
 
-            artist_json = json.loads(json_byte)
+            #import pdb; pdb.set_trace()
+            
+            while True:
+                try:
+                    artist_json = json.loads(json_byte)
+                    #import pdb; pdb.set_trace()
+                    break
+
+                except json.decoder.JSONDecodeError as e:
+
+                    #print(str(e))
+
+                    start_location = str(e).find("char") + 5
+                    end_location = str(e).find(")")
+                    
+                    delim_location = int(str(e)[start_location:end_location])
+
+                    bio_start = json_byte.find("biography")
+                    bio_end = json_byte.find("header_image")
+
+                    #json_byte[bio_start-1:bio_end-12]
+
+                    #json_byte = json_byte[:delim_location - 1] + json_byte[delim_location + 10:]
+
+                    json_byte = json_byte[:bio_start-1] + json_byte[bio_end - 1:]
+
+                    #import pdb; pdb.set_trace()
 
             for index, track in enumerate(artist_json['top_tracks']):
 
@@ -127,6 +174,8 @@ class Spotify_Search(object):
             song_info['song_name'] = top_tracks
             song_info['artist_name'] = artist_json['name']
             song_info['album_name'] = track_albums
+
+            #import pdb; pdb.set_trace()
 
             return song_info
 
@@ -168,13 +217,19 @@ class Spotify_Search(object):
         try:
             if isinstance(song_info['song_name'], list):
 
+                #import pdb; pdb.set_trace()
+
                 if len(song_info['song_name']) == 1:
                     song_info['song_name'] = song_info['song_name'][0]
 
                 else:
+
                     for index, song in enumerate(song_info["song_name"]):   
                         
-                        if song_title.lower() in song.lower():
+                        if song_title.lower() in song.lower() or song.lower() in song_title.lower():
+                            
+                            #import pdb; pdb.set_trace()
+
                             song_info['song_name'] = song
                             #import pdb; pdb.set_trace()
 
@@ -182,7 +237,11 @@ class Spotify_Search(object):
                                 
                                 song_info['album_name'] = song_info['album_name'][index]
 
-        
+                    if isinstance(song_info['song_name'], list):
+
+                        song_info['song_name'] = input("Enter Song Name > ")
+                        song_info['album_name'] = input("Enter Album Name > ")
+
         except:
             
             song_info = {

@@ -226,9 +226,16 @@ class YouDown(object):
 
             if not usr_check:
 
+                old_song_name = song_info['song_name']
+
                 song_info['song_name'] = self.youdown_debug_print("Enter Song Name > ", True)
                 song_info['artist_name'] = self.youdown_debug_print("Enter Artist Name > ", True)
                 song_info['album_name'] = self.youdown_debug_print("Enter Album Name > ", True)
+
+                import pdb; pdb.set_trace()
+
+                os.rename(os.environ['HOME'] + '/Music/' + old_song_name + '.mp3', os.environ['HOME'] + '/Music/' + song_info['song_name'] + '.mp3')
+                song_info['song_location'] = os.environ['HOME'] + '/Music/' + song_info['song_name'] + '.mp3'
 
                 while True:
                     custom_image_link = self.youdown_debug_print("Enter Cover Art URL > ", True)
