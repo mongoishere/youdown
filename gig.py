@@ -99,7 +99,7 @@ class GoogleImageGrabber(object):
         search_query = search_query + search_target + "&tbs=iar:s"
         search_query = search_query.replace(" ", "+")
 
-        import pdb; pdb.set_trace()
+        #import pdb; pdb.set_trace()
 
         #self.gig_browser.get(search_query + search_target + "&tbs=iar:s")
 
